@@ -89,16 +89,16 @@ action:
       keep_days: 5
       repack: true
 
-- choose:
-    - conditions: "{{ deconz_restart }}"
-      sequence:
-        - service: deconz.device_refresh
-          data: {}
-        - delay:
-            hours: 0
-            minutes: 5
-            seconds: 0
-            milliseconds: 0
+  - choose:
+      - conditions: "{{ deconz_restart }}"
+        sequence:
+          - service: deconz.device_refresh
+            data: {}
+          - delay:
+              hours: 0
+              minutes: 5
+              seconds: 0
+              milliseconds: 0
 
   - choose:
       - conditions: "{{ send_notification }}"
