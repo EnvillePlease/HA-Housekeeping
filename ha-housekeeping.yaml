@@ -21,6 +21,12 @@ blueprint:
       selector:
         text:
           type: password
+    deconz_restart:
+      name: Restart Deconz
+      description: restart Deconz (conbee (II)/raspbee(II) if being used for zigbee control.
+      selector:
+        boolean:
+      default: true
     reboot:
       name: Reboot Home Assistant
       description: Reboot HA when all housekeeping activities are completed.
@@ -49,6 +55,7 @@ variables:
   backup_password_required: !input password_required
   backup_password: !input password
   reboot_homeassistant: !input reboot
+  deconz_restart: !input deconz_restart
   send_notification: !input send_notification
   notify_device: !input notify_device
   notification_title: Automated Daily Backup
@@ -81,15 +88,17 @@ action:
     data:
       keep_days: 5
       repack: true
-      
-  - service: deconz.device_refresh
-    data: {}
-    
-  - delay:
-      hours: 0
-      minutes: 5
-      seconds: 0
-      milliseconds: 0
+
+- choose:
+    - conditions: "{{ deconz_restart }}"
+      sequence:
+        - service: deconz.device_refresh
+          data: {}
+        - delay:
+            hours: 0
+            minutes: 5
+            seconds: 0
+            milliseconds: 0
 
   - choose:
       - conditions: "{{ send_notification }}"
