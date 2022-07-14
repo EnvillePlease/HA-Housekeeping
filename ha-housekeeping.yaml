@@ -1,6 +1,7 @@
 blueprint:
   name: Automated Daily Snapshot
   description: Create a full snapshot backup at a given time every day.
+  source_url: https://raw.githubusercontent.com/EnvillePlease/Time-Of-Day-Motion-Lights/main/tod_motion_lights.yaml
   domain: automation
   input:
     trigger_time:
