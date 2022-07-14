@@ -1,1 +1,2 @@
-This is the read me file
+# Housekeeping
+## Daily housekeeping for Home Assistant
