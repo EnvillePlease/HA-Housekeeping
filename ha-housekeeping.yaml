@@ -1,7 +1,7 @@
 blueprint:
   name: Automated Daily Snapshot
   description: Create a full snapshot backup at a given time every day.
-  source_url: https://raw.githubusercontent.com/EnvillePlease/Time-Of-Day-Motion-Lights/main/tod_motion_lights.yaml
+  source_url: https://raw.githubusercontent.com/EnvillePlease/HA-Housekeeping/main/ha-housekeeping.yaml
   domain: automation
   input:
     trigger_time:
@@ -28,6 +28,9 @@ max_exceeded: silent
 
 variables:
   backup_filename: "Automated backup {{ now().strftime('%F') }}"
+  backup_password_required: !input password_required
+  backup_password: "Password"
+  reboot_homeassistant: !input reboot
   send_notification: !input send_notification
   notify_device: !input notify_device
   notification_title: Automated Daily Backup
@@ -38,9 +41,37 @@ trigger:
     at: !input trigger_time
 
 action:
-  - service: hassio.backup_full
+  -choose:
+     - conditions: "{{ password_required }}"
+       sequence:
+          - service: hassio.backup_full
+            data:
+            name: "{{ backup_filename }}"
+            password: "{{ backup_password }}"
+       default:
+       - service: hassio.backup_full
+         data:
+         name: "{{ backup_filename }}"
+       
+  - delay:
+      hours: 0
+      minutes: 10
+      seconds: 0
+      milliseconds: 0
+      
+  - service: recorder.purge
     data:
-      name: "{{ backup_filename }}"
+      keep_days: 5
+      repack: true
+      
+  - service: deconz.device_refresh
+    data: {}
+    
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
 
   - choose:
       - conditions: "{{ send_notification }}"
@@ -50,3 +81,9 @@ action:
             type: notify
             title: "{{ notification_title }}"
             message: "{{ notification_message }}"
+
+  - choose:
+      - conditions: "{{ reboot }}"
+        sequence:
+        - service: homeassistant.restart
+          data: {}
