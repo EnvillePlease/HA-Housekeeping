@@ -1,2 +1,2 @@
-# Housekeeping
-## Daily housekeeping for Home Assistant
+## Housekeeping
+### Daily housekeeping for Home Assistant
