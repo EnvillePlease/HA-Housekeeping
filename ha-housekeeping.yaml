@@ -9,6 +9,24 @@ blueprint:
       description: The snapshot will be created at this time, every day
       selector:
         time:
+    password_required:
+      name: Backup Password Required
+      description: Specifies whether the backup should be password protected.
+      selector:
+        boolean:
+      default: true
+    password:
+      name: Backup Password
+      description: The password used to encrypt the backup.
+      selector:
+        text:
+          type: password
+    reboot:
+      name: Reboot Home Assistant
+      description: Reboot HA when all housekeeping activities are completed.
+      selector:
+        boolean:
+      default: true
     send_notification:
       name: Send notification
       description: Sends a notification to a device if enabled
@@ -29,7 +47,7 @@ max_exceeded: silent
 variables:
   backup_filename: "Automated backup {{ now().strftime('%F') }}"
   backup_password_required: !input password_required
-  backup_password: "Password"
+  backup_password: !input password
   reboot_homeassistant: !input reboot
   send_notification: !input send_notification
   notify_device: !input notify_device
