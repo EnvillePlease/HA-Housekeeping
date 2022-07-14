@@ -41,7 +41,7 @@ trigger:
     at: !input trigger_time
 
 action:
-  -choose:
+  - choose:
      - conditions: "{{ password_required }}"
        sequence:
           - service: hassio.backup_full
