@@ -1,7 +1,6 @@
 blueprint:
   name: Daily Housekeeping
   description: Create a full snapshot backup at a given time every day, pack logs and restart.
-  source_url: https://raw.githubusercontent.com/EnvillePlease/HA-Housekeeping/main/ha-housekeeping.yaml
   domain: automation
   input:
     trigger_time:
