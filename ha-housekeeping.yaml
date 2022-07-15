@@ -37,7 +37,7 @@ blueprint:
       description: Check if you want the host to be rebooted at the end of the housekeeping functions.
       selector:
         boolean: 
-      default: true
+      default: false
     send_notification:
       name: Send notification
       description: Sends a notification to a device if enabled
