@@ -72,12 +72,12 @@ action:
           - choose:
               - conditions: "{{ backup_password_required }}"
                 sequence:
-                  - service: hassio.backup.full
+                  - service: hassio.backup_full
                     data:
                       name: "{{ backup_name }}"
                       password: "{{ backup_password }}"
                 default:
-                  - service: hassio.backup.full
+                  - service: hassio.backup_full
                     data:
                       name: "{{ backup_name }}"
   - choose:
