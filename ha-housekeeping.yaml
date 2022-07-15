@@ -110,5 +110,8 @@ action:
       minutes: 5
       seconds: 0
       milliseconds: 0
-  - service: hassio.host_reboot
-    data: {}
+  - choose:
+      - conditions: "{{ reboot_host }}"
+        sequence:
+          - service: hassio.host_reboot
+            data: {}
