@@ -1,42 +1,48 @@
 blueprint:
   name: Daily Housekeeping
-  description: Create a full snapshot backup at a given time every day, pack logs and restart.
+  description: Performs backups, log purging and compacting, Deconz Zigbee restart and system reboots.
   domain: automation
   input:
     trigger_time:
       name: Snapshot creation time
       description: The snapshot will be created at this time, every day
       selector:
-        time:
-    password_required:
-      name: Backup Password Required
-      description: Specifies whether the backup should be password protected.
+        time: 
+    take_backup:
+      name: Take a backup
+      description: Do you want to take a backup?
       selector:
-        boolean:
+        boolean: 
       default: true
-    password:
+    backup_password_required:
       name: Backup Password
-      description: The password used to encrypt the backup.
+      description: Do you want to specify a backup password?
+      selector:
+        boolean: 
+      default: true
+    backup_password:
+      name: Backup Password
+      description: enter the password you want to use to encrypt your backup here.
       selector:
         text:
           type: password
-    deconz_restart:
-      name: Restart Deconz
-      description: restart Deconz (conbee (II)/raspbee(II) if being used for zigbee control.
+    refresh_deconz:
+      name: Refresh Deconz
+      description: If you have the Deconz addin, do you want to force a device refresh?
       selector:
-        boolean:
-      default: true
-    reboot:
-      name: Reboot Home Assistant
-      description: Reboot HA when all housekeeping activities are completed.
+        boolean: 
+      default: false
+    reboot_host:
+      name: Text
+      description: Text
       selector:
-        boolean:
+        boolean: 
       default: true
     send_notification:
       name: Send notification
       description: Sends a notification to a device if enabled
       selector:
-        boolean:
+        boolean: 
       default: false
     notify_device:
       name: Device to notify
@@ -45,60 +51,51 @@ blueprint:
         device:
           integration: mobile_app
       default: ""
-
+variables:
+  take_backup: !input take_backup
+  backup_password_required: !input backup_password_required
+  refresh_deconz: !input refresh_deconz
+  reboot_host: !input reboot_host
+  send_notification: !input send_notification
+  notification_title: Automated Daily Housekeeping
+  notification_message: Home Assistant full backup created. {{ now().strftime('%F') }}
 mode: single
 max_exceeded: silent
-
-variables:
-  backup_filename: "Automated backup {{ now().strftime('%F') }}"
-  backup_password_required: !input password_required
-  backup_password: !input password
-  reboot_homeassistant: !input reboot
-  deconz_restart: !input deconz_restart
-  send_notification: !input send_notification
-  notify_device: !input notify_device
-  notification_title: Automated Daily Backup
-  notification_message: "Home Assistant full backup created. {{ now().strftime('%F') }}"
-
 trigger:
   - platform: time
-    at: !input trigger_time
-
+    at: trigger_time
 action:
   - choose:
-     - conditions: "{{ password_required }}"
-       sequence:
-          - service: hassio.backup_full
-            data:
-            name: "{{ backup_filename }}"
-            password: "{{ backup_password }}"
-       default:
-       - service: hassio.backup_full
-         data:
-         name: "{{ backup_filename }}"
-       
+      - conditions: "{{ take_backup }}"
+        sequence:
+          - choose:
+              - conditions: "{{ backup_password_required }}"
+                sequence:
+                  - service: hassio.backup.full
+                    data:
+                      name: Automated backup {{ now().strftime('%F') }}
+                      password: !input backup_password
+                default:
+                  - service: hassio.backup.full
+                    data:
+                      name: Automated backup {{ now().strftime('%F') }}
+  - choose:
+      - conditions: "{{ send_notification }}"
+        sequence:
+          - device_id: notify_device
+            domain: mobile_app
+            type: notify
+            title: "{{ notification_title }}"
+            message: "{{ notification_message }}"
   - delay:
       hours: 0
       minutes: 10
       seconds: 0
       milliseconds: 0
-      
   - service: recorder.purge
     data:
       keep_days: 5
       repack: true
-
-  - choose:
-      - conditions: "{{ deconz_restart }}"
-        sequence:
-          - service: deconz.device_refresh
-            data: {}
-          - delay:
-              hours: 0
-              minutes: 5
-              seconds: 0
-              milliseconds: 0
-
   - choose:
       - conditions: "{{ send_notification }}"
         sequence:
@@ -107,9 +104,10 @@ action:
             type: notify
             title: "{{ notification_title }}"
             message: "{{ notification_message }}"
-
-  - choose:
-      - conditions: "{{ reboot }}"
-        sequence:
-          - service: homeassistant.restart
-            data: {}
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+  - service: hassio.host_reboot
+    data: {}
