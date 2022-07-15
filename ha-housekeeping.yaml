@@ -65,21 +65,22 @@ mode: single
 trigger:
   - platform: time
     at: !input trigger_time
-action:
+action:                      
   - choose:
-      - conditions: "{{ take_backup }}"
-        sequence:
-          - choose:
-              - conditions: "{{ backup_password_required }}"
-                sequence:
-                  - service: hassio.backup_full
-                    data:
-                      name: "{{ backup_name }}"
-                      password: "{{ backup_password }}"
-                default:
-                  - service: hassio.backup_full
-                    data:
-                      name: "{{ backup_name }}"
+    - conditions: "{{ take_backup }}"
+      sequence:
+      - choose:
+        - conditions: "{{ backup_password_required }}"
+          sequence:
+          - service: hassio.backup_full
+            data:
+              name: "{{ backup_name }}"
+              password: "{{ backup_password }}"
+        default:
+        - service: hassio.backup_full
+          data:
+            name: "{{ backup_name }}"
+    default: []
   - choose:
       - conditions: "{{ send_notification }}"
         sequence:
