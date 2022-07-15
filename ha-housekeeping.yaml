@@ -81,14 +81,6 @@ action:
           data:
             name: "{{ backup_name }}"
     default: []
-  - choose:
-      - conditions: "{{ send_notification }}"
-        sequence:
-          - device_id: notify_device
-            domain: mobile_app
-            type: notify
-            title: "{{ notification_title }}"
-            message: "{{ notification_message }}"
   - delay:
       hours: 0
       minutes: 10
