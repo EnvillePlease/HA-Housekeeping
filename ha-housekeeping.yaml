@@ -54,16 +54,17 @@ blueprint:
 variables:
   take_backup: !input take_backup
   backup_password_required: !input backup_password_required
+  backup_name: "Automated backup {{ now().strftime('%F') }}"
+  backup_password: !input backup_password
   refresh_deconz: !input refresh_deconz
   reboot_host: !input reboot_host
   send_notification: !input send_notification
-  notification_title: Automated Daily Housekeeping
-  notification_message: Home Assistant full backup created. {{ now().strftime('%F') }}
+  notification_title: "Automated Daily Housekeeping"
+  notification_message: "Home Assistant full backup created. {{ now().strftime('%F') }}"
 mode: single
-max_exceeded: silent
 trigger:
   - platform: time
-    at: trigger_time
+    at: !input trigger_time
 action:
   - choose:
       - conditions: "{{ take_backup }}"
@@ -73,12 +74,12 @@ action:
                 sequence:
                   - service: hassio.backup.full
                     data:
-                      name: Automated backup {{ now().strftime('%F') }}
-                      password: !input backup_password
+                      name: "{{ backup_name }}"
+                      password: "{{ backup_password }}"
                 default:
                   - service: hassio.backup.full
                     data:
-                      name: Automated backup {{ now().strftime('%F') }}
+                      name: "{{ backup_name }}"
   - choose:
       - conditions: "{{ send_notification }}"
         sequence:
